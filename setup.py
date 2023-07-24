@@ -57,11 +57,11 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        'Django>=1.8,<=3.1',
-        'djangorestframework>=3.5.4',
-        'jsonfield>=2.0.0',
-        'django-fsm==2.7.0',
-        'six>=1.11.0',
+        'Django>=4.0',
+        'djangorestframework>=3.14.0',
+        'jsonfield>=3.1.0',
+        'django-fsm==2.8.1',
+        'six>=1.16.0',
     ],
     license="MIT",
     zip_safe=False,
@@ -69,7 +69,7 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Framework :: Django',
-        'Framework :: Django :: 3.0',
+        'Framework :: Django :: 4.0',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
@@ -78,6 +78,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
 )
