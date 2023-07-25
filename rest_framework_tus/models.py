@@ -16,7 +16,7 @@ from rest_framework_tus import signals
 from rest_framework_tus import states
 from rest_framework_tus.utils import write_bytes_to_file
 
-from .settings import TUS_SAVE_TO_DISK
+from .settings import TUS_USE_TEMP_FILE
 import logging
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class AbstractUpload(models.Model):
 
     def write_data(self, bytes, chunk_size):
 
-        if TUS_SAVE_TO_DISK:             
+        if TUS_USE_TEMP_FILE:             
             num_bytes_written = write_bytes_to_file(self.temporary_file_path, self.upload_offset, bytes, makedirs=True)
 
         elif self.in_memory_file:

@@ -219,9 +219,14 @@ class TusPatchMixin(mixins.UpdateModelMixin):
         if upload_offset != upload.upload_offset:
             raise Conflict
 
-        if tus_settings.TUS_SAVE_TO_DISK:
+        if tus_settings.TUS_USE_TEMP_FILE:
             # Make sure there is a tempfile for the upload
             assert upload.get_or_create_temporary_file()
+        else:
+            # Make sure there is an in memory file for the upload
+            if not upload.in_memory_file:
+                upload.in_memory_file = bytearray()
+                logger.debug(f'Created in memory file for upload {upload.guid}')
 
         # Change state
         if upload.state == states.INITIAL:
