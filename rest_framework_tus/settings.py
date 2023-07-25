@@ -19,3 +19,6 @@ TUS_SAVE_HANDLER_CLASS = \
     REST_FRAMEWORK_TUS.get('SAVE_HANDLER_CLASS', 'rest_framework_tus.storage.DefaultSaveHandler')
 TUS_MAX_FILE_SIZE = REST_FRAMEWORK_TUS.get('MAX_FILE_SIZE', 4294967296)  # in bytes
 TUS_FILENAME_METADATA_FIELD = REST_FRAMEWORK_TUS.get('FILENAME_METADATA_FIELD', 'filename')
+
+
+TUS_SAVE_TO_DISK = REST_FRAMEWORK_TUS.get('SAVE_TO_DISK', True) # if set to False, the file will be held in memory

@@ -176,6 +176,10 @@ class TusCreateMixin(mixins.CreateModelMixin):
         return filename
 
 class TusPatchMixin(mixins.UpdateModelMixin):
+
+    # for in memory saves
+    in_memory_file = None
+
     def get_chunk(self, request):
         if TusUploadStreamParser in self.parser_classes:
             return request.data['chunk']
@@ -215,8 +219,9 @@ class TusPatchMixin(mixins.UpdateModelMixin):
         if upload_offset != upload.upload_offset:
             raise Conflict
 
-        # Make sure there is a tempfile for the upload
-        assert upload.get_or_create_temporary_file()
+        if tus_settings.TUS_SAVE_TO_DISK:
+            # Make sure there is a tempfile for the upload
+            assert upload.get_or_create_temporary_file()
 
         # Change state
         if upload.state == states.INITIAL:

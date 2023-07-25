@@ -16,6 +16,11 @@ from rest_framework_tus import signals
 from rest_framework_tus import states
 from rest_framework_tus.utils import write_bytes_to_file
 
+from .settings import TUS_SAVE_TO_DISK
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class AbstractUpload(models.Model):
     """
@@ -36,6 +41,8 @@ class AbstractUpload(models.Model):
 
     expires = models.DateTimeField(null=True, blank=True)
 
+    in_memory_file = None
+
     class Meta:
         abstract = True
 
@@ -45,7 +52,24 @@ class AbstractUpload(models.Model):
             raise ValidationError(_('upload_offset should be >= 0.'))
 
     def write_data(self, bytes, chunk_size):
-        num_bytes_written = write_bytes_to_file(self.temporary_file_path, self.upload_offset, bytes, makedirs=True)
+
+        if TUS_SAVE_TO_DISK:             
+            num_bytes_written = write_bytes_to_file(self.temporary_file_path, self.upload_offset, bytes, makedirs=True)
+
+        elif self.in_memory_file:
+            initial_size = len(self.in_memory_file)
+            logger.debug(f'initial size: {initial_size}')
+
+            self.in_memory_file += bytes
+
+            final_size = len(self.in_memory_file)
+            logger.debug(f'final size: {final_size}')
+
+            num_bytes_written = final_size - initial_size
+
+            if not (num_bytes_written == len(chunk_size)):
+                raise Exception(f'bytes written does not match chunk size, bytes written: {num_bytes_written}, chunk size: {chunk_size}')
+
 
         if num_bytes_written > 0:
             self.upload_offset += num_bytes_written
