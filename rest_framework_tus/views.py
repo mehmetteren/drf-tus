@@ -23,7 +23,7 @@ from .serializers import UploadSerializer
 from .utils import encode_upload_metadata, checksum_matches
 from rest_framework import views
 
-from storage import in_memory_navigator
+from .storage import in_memory_navigator
 
 logger = logging.getLogger(__name__)
 

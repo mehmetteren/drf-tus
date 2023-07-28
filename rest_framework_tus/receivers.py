@@ -28,5 +28,5 @@ def on_saving_done(sender, instance, **kwargs):
 
 @receiver(finished, sender=get_upload_model())
 def on_finished(sender, instance, **kwargs):
-    in_memory_navigator.delete(instance.guid)
+    in_memory_navigator.delete(instance)
     logger.debug('on_finished: {}'.format(instance))

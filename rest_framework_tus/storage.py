@@ -101,8 +101,11 @@ class InMemoryNavigator(metaclass=Singleton):
     def get(self, upload):
         return self.files.get(upload.guid, None)
 
-    def delete(self, upload_guid):
-        del self.files.get(upload_guid)
+    def delete(self, upload):
+        try:
+            del self.files[upload.guid]
+        except KeyError:
+            logging.warning(f"File {upload.guid} does not exist in memory")
 
     def exists(self, upload):
         return upload.guid in self.files
