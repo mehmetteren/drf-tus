@@ -21,6 +21,9 @@ from .exceptions import Conflict
 from .models import get_upload_model
 from .serializers import UploadSerializer
 from .utils import encode_upload_metadata, checksum_matches
+from rest_framework import views
+
+from storage import in_memory_navigator
 
 logger = logging.getLogger(__name__)
 
@@ -177,9 +180,6 @@ class TusCreateMixin(mixins.CreateModelMixin):
 
 class TusPatchMixin(mixins.UpdateModelMixin):
 
-    # for in memory saves
-    in_memory_file = None
-
     def get_chunk(self, request):
         if TusUploadStreamParser in self.parser_classes:
             return request.data['chunk']
@@ -216,6 +216,7 @@ class TusPatchMixin(mixins.UpdateModelMixin):
         upload_offset = getattr(request, constants.UPLOAD_OFFSET_NAME)
 
         # Validate upload_offset
+        logger.debug(f'----- upload offsets: incoming:{upload_offset}, from db:{upload.upload_offset}')
         if upload_offset != upload.upload_offset:
             raise Conflict
 
@@ -224,8 +225,8 @@ class TusPatchMixin(mixins.UpdateModelMixin):
             assert upload.get_or_create_temporary_file()
         else:
             # Make sure there is an in memory file for the upload
-            if not upload.in_memory_file:
-                upload.in_memory_file = bytearray()
+            if not in_memory_navigator.exists(upload):
+                in_memory_navigator.create(upload)
                 logger.debug(f'Created in memory file for upload {upload.guid}')
 
         # Change state
@@ -316,3 +317,9 @@ class UploadViewSet(TusCreateMixin,
 
     def get_queryset(self):
         return get_upload_model().objects.all()
+    
+
+class TestView(views.APIView):
+    def get(self, request, format=None):
+        logging.debug(f"TESSST{tus_settings.TUS_USE_TEMP_FILE}")
+        return Response(f"Hello, world. You're at the polls index. TESSST{tus_settings.TUS_USE_TEMP_FILE}")

@@ -21,4 +21,4 @@ TUS_MAX_FILE_SIZE = REST_FRAMEWORK_TUS.get('MAX_FILE_SIZE', 4294967296)  # in by
 TUS_FILENAME_METADATA_FIELD = REST_FRAMEWORK_TUS.get('FILENAME_METADATA_FIELD', 'filename')
 
 
-TUS_USE_TEMP_FILE = REST_FRAMEWORK_TUS.get('SAVE_TO_DISK', True) # if set to False, the file will be held in memory
+TUS_USE_TEMP_FILE = REST_FRAMEWORK_TUS.get('USE_TEMP_FILE', True) # if set to False, the file will be held in memory

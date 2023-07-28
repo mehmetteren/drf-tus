@@ -9,6 +9,8 @@ from rest_framework_tus.models import get_upload_model
 from rest_framework_tus.signals import received, saved, finished
 from rest_framework_tus.storage import get_save_handler
 
+from .storage import in_memory_navigator
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,4 +28,5 @@ def on_saving_done(sender, instance, **kwargs):
 
 @receiver(finished, sender=get_upload_model())
 def on_finished(sender, instance, **kwargs):
+    in_memory_navigator.delete(instance.guid)
     logger.debug('on_finished: {}'.format(instance))

@@ -16,7 +16,8 @@ from rest_framework_tus import signals
 from rest_framework_tus import states
 from rest_framework_tus.utils import write_bytes_to_file
 
-from .settings import TUS_USE_TEMP_FILE
+from .settings import TUS_USE_TEMP_FILE, TUS_USE_TEMP_FILE
+from .storage import in_memory_navigator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,8 +42,6 @@ class AbstractUpload(models.Model):
 
     expires = models.DateTimeField(null=True, blank=True)
 
-    in_memory_file = None
-
     class Meta:
         abstract = True
 
@@ -53,21 +52,25 @@ class AbstractUpload(models.Model):
 
     def write_data(self, bytes, chunk_size):
 
+        num_bytes_written = 0
         if TUS_USE_TEMP_FILE:             
             num_bytes_written = write_bytes_to_file(self.temporary_file_path, self.upload_offset, bytes, makedirs=True)
 
-        elif self.in_memory_file:
-            initial_size = len(self.in_memory_file)
+        elif in_memory_navigator.exists(self):
+
+            in_memory_file = in_memory_navigator.get(self)
+
+            initial_size = len(in_memory_file)
             logger.debug(f'initial size: {initial_size}')
 
-            self.in_memory_file += bytes
+            in_memory_navigator.write_data(self, bytes)
 
-            final_size = len(self.in_memory_file)
+            final_size = len(in_memory_file)
             logger.debug(f'final size: {final_size}')
 
             num_bytes_written = final_size - initial_size
 
-            if not (num_bytes_written == len(chunk_size)):
+            if not (num_bytes_written == chunk_size):
                 raise Exception(f'bytes written does not match chunk size, bytes written: {num_bytes_written}, chunk size: {chunk_size}')
 
 
@@ -92,11 +95,14 @@ class AbstractUpload(models.Model):
     def is_complete(self):
         return self.upload_offset == self.upload_length
 
-    def temporary_file_exists(self):
-        return self.temporary_file_path and os.path.isfile(self.temporary_file_path)
-
-    def _temporary_file_exists(self):
-        return self.temporary_file_exists()
+    def intermediate_file_exists(self):
+        if TUS_USE_TEMP_FILE:
+            return self.temporary_file_path and os.path.isfile(self.temporary_file_path)
+        else:
+            return in_memory_navigator.exists(self)
+        
+    def _intermediate_file_exists(self):
+        return self.intermediate_file_exists()
 
     def get_or_create_temporary_file(self):
         if not self.temporary_file_path:
@@ -107,7 +113,7 @@ class AbstractUpload(models.Model):
         assert os.path.isfile(self.temporary_file_path)
         return self.temporary_file_path
 
-    @transition(field=state, source=states.INITIAL, target=states.RECEIVING, conditions=[_temporary_file_exists])
+    @transition(field=state, source=states.INITIAL, target=states.RECEIVING, conditions=[_intermediate_file_exists])
     def start_receiving(self):
         """
         State transition to indicate the first file chunk has been received successfully
