@@ -58,17 +58,9 @@ class AbstractUpload(models.Model):
 
         elif in_memory_navigator.exists(self):
 
-            in_memory_file = in_memory_navigator.get(self)
+            num_bytes_written = in_memory_navigator.write_data(self, bytes)
 
-            initial_size = len(in_memory_file)
-            logger.debug(f'initial size: {initial_size}')
-
-            in_memory_navigator.write_data(self, bytes)
-
-            final_size = len(in_memory_file)
-            logger.debug(f'final size: {final_size}')
-
-            num_bytes_written = final_size - initial_size
+            logger.debug(f'bytes written: {num_bytes_written}, upload_offset: {self.upload_offset}, chunk_size: {chunk_size}')
 
             if not (num_bytes_written == chunk_size):
                 raise Exception(f'bytes written does not match chunk size, bytes written: {num_bytes_written}, chunk size: {chunk_size}')

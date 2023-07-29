@@ -96,7 +96,11 @@ class InMemoryNavigator(metaclass=Singleton):
         file = self.files.get(upload.guid, None)
 
         if file is not None:
-            file.extend(data)
+
+            for i in range(len(data)):
+                file[i + upload.upload_offset] = data[i]
+
+            return i + 1
         
     def get(self, upload):
         return self.files.get(upload.guid, None)
